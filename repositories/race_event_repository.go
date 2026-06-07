@@ -62,34 +62,6 @@ type RaceEventQueryFilters struct {
 	CreatedAtTo   *time.Time
 }
 
-func (r *RaceEventRepository) GetByRaceAndEventID(
-	ctx context.Context,
-	raceID string,
-	eventID string,
-) (models.RaceEvent, error) {
-	result, err := r.client.GetItem(
-		ctx,
-		&dynamodb.GetItemInput{
-			TableName: &r.tableName,
-			Key: map[string]types.AttributeValue{
-				"raceId":  &types.AttributeValueMemberS{Value: raceID},
-				"eventId": &types.AttributeValueMemberS{Value: eventID},
-			},
-		},
-	)
-
-	if err != nil {
-		return models.RaceEvent{}, err
-	}
-
-	var event models.RaceEvent
-	if err = attributevalue.UnmarshalMap(result.Item, &event); err != nil {
-		return models.RaceEvent{}, err
-	}
-
-	return event, nil
-}
-
 func (r *RaceEventRepository) GetByRaceID(
 	ctx context.Context,
 	filters RaceEventQueryFilters,
