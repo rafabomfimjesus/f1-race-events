@@ -9,9 +9,20 @@ import (
 	"f1-race-events/usecases"
 )
 
-func RegisterRoutes(usecase *usecases.CreateRaceEventUseCase) {
+func RegisterRoutes(
+	createUsecase *usecases.CreateRaceEventUseCase,
+	listUsecase *usecases.GetAllRaceEventsUseCase,
+) {
 	http.HandleFunc("/race-events", func(w http.ResponseWriter, r *http.Request) {
-		CreateRaceEventHandler(usecase, w, r)
+		switch r.Method {
+		case http.MethodPost:
+			CreateRaceEventHandler(createUsecase, w, r)
+		case http.MethodGet:
+			ListRaceEventsHandler(listUsecase, w, r)
+		default:
+			w.Header().Set("Allow", "GET, POST")
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		}
 	})
 }
 
@@ -38,8 +49,10 @@ func CreateRaceEventHandler(
 	}
 
 	out := dtos.OutputRaceEventRequest{
+		EventID:     evt.EventID,
 		RaceID:      evt.RaceID,
 		DriverID:    evt.DriverID,
+		ScuderiaID:  evt.ScuderiaID,
 		Lap:         evt.Lap,
 		EventType:   string(evt.EventType),
 		Description: evt.Description,
@@ -49,4 +62,35 @@ func CreateRaceEventHandler(
 	response.Header().Set("Content-Type", "application/json")
 	response.WriteHeader(http.StatusCreated)
 	_ = json.NewEncoder(response).Encode(out)
+}
+
+func ListRaceEventsHandler(
+	usecase *usecases.GetAllRaceEventsUseCase,
+	response http.ResponseWriter,
+	router *http.Request,
+) {
+	query, err := dtos.NewGetRaceEventsQuery(router.URL.Query())
+	if err != nil {
+		http.Error(response, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	filters := usecases.GetAllRaceEventsFilters{
+		RaceID:        query.RaceID,
+		DriverID:      query.DriverID,
+		ScuderiaID:    query.ScuderiaID,
+		EventType:     query.EventType,
+		Lap:           query.Lap,
+		CreatedAtFrom: query.CreatedAtFrom,
+		CreatedAtTo:   query.CreatedAtTo,
+	}
+
+	result, err := usecase.Execute(filters)
+	if err != nil {
+		http.Error(response, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(response).Encode(result)
 }

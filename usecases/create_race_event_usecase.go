@@ -31,17 +31,19 @@ func (u *CreateRaceEventUseCase) Execute(
 		return models.RaceEvent{}, err
 	}
 
-	eventID := uuid.NewString()
-	raceID := request.RaceID
+	raceID := "RACE#" + request.RaceID
 	driverID := request.DriverID
+	scuderiaID := request.ScuderiaID
 	eventType := models.EventType(request.EventType)
 	description := request.Description
 	createdAt := time.Now().UTC()
+	eventID := "EVENT#" + createdAt.String() + "#" + uuid.NewString()
 
 	event := models.RaceEvent{
 		EventID:     eventID,
 		RaceID:      raceID,
 		DriverID:    driverID,
+		ScuderiaID:  scuderiaID,
 		Lap:         request.Lap,
 		EventType:   eventType,
 		Description: description,

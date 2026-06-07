@@ -6,6 +6,7 @@ type RaceEvent struct {
 	EventID     string    `dynamodbav:"eventId" json:"eventId"`
 	RaceID      string    `dynamodbav:"raceId" json:"raceId"`
 	DriverID    string    `dynamodbav:"driverId" json:"driverId"`
+	ScuderiaID  string    `dynamodbav:"scuderiaId" json:"scuderiaId"`
 	Lap         int       `dynamodbav:"lap" json:"lap"`
 	EventType   EventType `dynamodbav:"eventType" json:"eventType"`
 	Description string    `dynamodbav:"description" json:"description"`

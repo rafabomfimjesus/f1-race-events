@@ -31,9 +31,10 @@ func main() {
 		"race_event",
 	)
 
-	usecase := usecases.NewCreateRaceEventUseCase(repository)
+	createUsecase := usecases.NewCreateRaceEventUseCase(repository)
+	listUsecase := usecases.NewGetAllRaceEventsUseCase(repository)
 
-	routes.RegisterRoutes(usecase)
+	routes.RegisterRoutes(createUsecase, listUsecase)
 
 	logger.Info(
 		"server listening",
