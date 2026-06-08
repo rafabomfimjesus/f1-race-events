@@ -46,3 +46,31 @@ resource "aws_ecs_task_definition" "app" {
     }
   ])
 }
+
+resource "aws_ecs_service" "app" {
+  name            = "f1-race-events-service"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.app.arn
+
+  desired_count = 1
+
+  launch_type = "FARGATE"
+
+  network_configuration {
+    assign_public_ip = true
+
+    subnets = data.aws_subnets.default.ids
+
+    security_groups = [
+      aws_security_group.ecs_service.id
+    ]
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.app.arn
+
+    container_name = "f1-race-events"
+
+    container_port = 8080
+  }
+}
